@@ -1,23 +1,25 @@
 package org.captaindmitro.altgram
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import org.captaindmitro.altgram.databinding.ActivityAltgramBinding
-import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
-import org.captaindmitro.altgram.ui.viewmodels.ProfileViewModel
 
 @AndroidEntryPoint
 class AltGramActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAltgramBinding
     private lateinit var bottomNavigationView: BottomNavigationView
-    private val loginViewModel: LoginViewModel by viewModels()
-    private val profileViewModel: ProfileViewModel by viewModels()
+
+    private val getImageToUpload = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        Log.i("Main", "Uri image: $uri")
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +40,10 @@ class AltGramActivity : AppCompatActivity() {
             } else {
                 bottomNavigationView.visibility = View.VISIBLE
             }
+//            if (destination.id == R.id.selectFileFragment) {
+//                getImageToUpload.launch("image/*")
+//                navController.navigateUp()
+//            }
         }
     }
 }

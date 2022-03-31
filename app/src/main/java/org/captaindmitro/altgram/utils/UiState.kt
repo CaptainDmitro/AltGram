@@ -1,7 +1,6 @@
 package org.captaindmitro.altgram.utils
 
-import org.captaindmitro.data.network.ImagesApiResponse
-import java.lang.Exception
+import org.captaindmitro.domain.models.ImagesApiResponse
 
 sealed class UiState {
     object Loading : UiState()

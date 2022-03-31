@@ -20,15 +20,12 @@ import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
 
 class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
+    private lateinit var userNameEditText: EditText
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var loginButton: Button
     private lateinit var registrationButton: Button
     private val loginViewModel: LoginViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,6 +38,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        userNameEditText = binding.userNameEditText
         emailEditText = binding.emailEditText
         passwordEditText = binding.passwordEditText
         loginButton = binding.loginButton
@@ -65,6 +63,7 @@ class LoginFragment : Fragment() {
         registrationButton.setOnClickListener {
             try {
                 loginViewModel.signUp(
+                    userName = userNameEditText.text.toString(),
                     email = emailEditText.text.toString(),
                     password = passwordEditText.text.toString(),
                     onSuccess = {

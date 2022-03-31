@@ -23,10 +23,6 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private val loginViewModel: LoginViewModel by activityViewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -55,8 +51,6 @@ class HomeFragment : Fragment() {
                             is UiState.Empty -> {Log.i("Main", "Empty")}
                             is UiState.Error -> {Log.i("Main", "Error")}
                             is UiState.Success -> {
-                                Log.i("Main", "Success")
-                                Log.i("Main", apiState.data.toString())
                                 recyclerView = binding.rv
                                 recyclerView.adapter = HomeAdapter(
                                     apiState.data.photos.map { it.src.original }

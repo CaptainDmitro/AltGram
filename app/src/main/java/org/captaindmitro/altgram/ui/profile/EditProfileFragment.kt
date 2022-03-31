@@ -10,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import org.captaindmitro.altgram.R
 import org.captaindmitro.altgram.databinding.FragmentEditProfileBinding
@@ -43,8 +44,11 @@ class EditProfileFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
-            loginViewModel.changeDisplayName(newDisplayName.text.toString())
-            findNavController().popBackStack()
+            loginViewModel.changeDisplayName(
+                newDisplayName.text.toString(),
+                { findNavController().navigateUp() },
+                { Snackbar.make(it, "Cannot update username. Try later.", Snackbar.LENGTH_SHORT).show() }
+            )
         }
 
         signOutButton.setOnClickListener {
