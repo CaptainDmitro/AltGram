@@ -7,6 +7,11 @@
     android:gravity="center"
     tools:context=".ui.login.LoginFragment">
 
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
     <EditText
         android:id="@+id/userNameEditText"
         android:layout_width="match_parent"
@@ -14,9 +19,11 @@
         android:layout_marginStart="54dp"
         android:layout_marginEnd="54dp"
         android:ems="10"
+        android:gravity="bottom"
+        android:hint="Username"
         android:inputType="textPersonName"
         android:minHeight="48dp"
-        android:hint="Username" />
+        android:visibility="gone" />
 
     <EditText
         android:id="@+id/emailEditText"
@@ -48,8 +55,31 @@
 
     <Button
         android:id="@+id/registration_button"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Register" />
+        android:text="Register"
+        android:visibility="gone" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/sign_up_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:text="Create account"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/sign_in_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:gravity="bottom"
+        android:text="Sign in with existing one"
+        android:visibility="gone" />
 
 </LinearLayout>

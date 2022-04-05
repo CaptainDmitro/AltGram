@@ -6,7 +6,7 @@
     <item android:id="@+id/searchFragment"
         android:title="Search"
         android:icon="@drawable/ic_search_foreground" />
-    <item android:id="@+id/selectFileFragment"
+    <item android:id="@+id/newPostFragment"
         android:title="Add"
         android:icon="@drawable/ic_add_foreground" />
     <item android:id="@+id/favoriteFragment"

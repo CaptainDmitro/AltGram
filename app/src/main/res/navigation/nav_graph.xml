@@ -14,12 +14,6 @@
             android:id="@+id/action_homeFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph" />
-        <action
-            android:id="@+id/action_homeFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
-        <action
-            android:id="@+id/action_homeFragment_to_postDetailsFragment"
-            app:destination="@id/postDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -43,6 +37,11 @@
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
+        <argument
+            android:name="userId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
     <fragment
         android:id="@+id/postDetailsFragment"
@@ -50,8 +49,11 @@
         android:label="fragment_post_details"
         tools:layout="@layout/fragment_post_details" >
         <argument
-            android:name="urlToImage"
+            android:name="postId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_postDetailsFragment_to_profileFragment2"
+            app:destination="@id/profileFragment" />
     </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
@@ -64,9 +66,14 @@
             app:popUpTo="@id/nav_graph" />
     </fragment>
     <fragment
-        android:id="@+id/selectFileFragment"
-        android:name="org.captaindmitro.altgram.SelectFileFragment"
-        android:label="fragment_select_file"
-        tools:layout="@layout/fragment_select_file" />
+        android:id="@+id/newPostFragment"
+        android:name="org.captaindmitro.altgram.ui.newpost.NewPostFragment"
+        android:label="fragment_new_post"
+        tools:layout="@layout/fragment_new_post" /><action android:id="@+id/action_global_postDetailsFragment" app:destination="@id/postDetailsFragment"/>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="org.captaindmitro.altgram.ui.search.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" />
 
 </navigation>

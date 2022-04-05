@@ -1,10 +1,8 @@
 package org.captaindmitro.altgram.utils
 
-import org.captaindmitro.domain.models.ImagesApiResponse
-
-sealed class UiState {
-    object Loading : UiState()
-    class Success(val data: ImagesApiResponse) : UiState()
-    class Error(val error: Exception) : UiState()
-    object Empty : UiState()
+sealed class UiState<out T> {
+    object Loading : UiState<Nothing>()
+    class Success<T>(val data: T) : UiState<T>()
+    class Error(val error: Exception) : UiState<Nothing>()
+    object Empty : UiState<Nothing>()
 }

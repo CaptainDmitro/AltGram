@@ -5,21 +5,21 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.NavArgument
+import androidx.navigation.NavType
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.AndroidEntryPoint
 import org.captaindmitro.altgram.databinding.ActivityAltgramBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AltGramActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAltgramBinding
     private lateinit var bottomNavigationView: BottomNavigationView
-
-    private val getImageToUpload = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        Log.i("Main", "Uri image: $uri")
-
-    }
+    @Inject lateinit var firebaseAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,16 +34,15 @@ class AltGramActivity : AppCompatActivity() {
         val navController = navHostController.navController
         findViewById<BottomNavigationView>(R.id.bottom_nav).setupWithNavController(navController)
 
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id == R.id.loginFragment) {
-                bottomNavigationView.visibility = View.GONE
-            } else {
-                bottomNavigationView.visibility = View.VISIBLE
+        navController.addOnDestinationChangedListener { controller, destination, arguments ->
+            when (destination.id) {
+                R.id.loginFragment -> {
+                    bottomNavigationView.visibility = View.GONE
+                }
+                R.id.homeFragment -> {
+                    bottomNavigationView.visibility = View.VISIBLE
+                }
             }
-//            if (destination.id == R.id.selectFileFragment) {
-//                getImageToUpload.launch("image/*")
-//                navController.navigateUp()
-//            }
         }
     }
 }

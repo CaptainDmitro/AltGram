@@ -11,17 +11,22 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kotlinx.coroutines.launch
+import org.captaindmitro.altgram.adapters.HomeAdapter
+import org.captaindmitro.altgram.adapters.PostsAdapter
 import org.captaindmitro.altgram.databinding.FragmentHomeBinding
+import org.captaindmitro.altgram.ui.viewmodels.HomeViewModel
 import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
 import org.captaindmitro.altgram.utils.UiState
 
 class HomeFragment : Fragment() {
+    private val loginViewModel: LoginViewModel by activityViewModels()
+    private val homeViewModel: HomeViewModel by activityViewModels()
+
     private lateinit var binding: FragmentHomeBinding
     private lateinit var recyclerView: RecyclerView
-    private val loginViewModel: LoginViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,7 +40,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 launch {
                     loginViewModel.currentUser.collect { username ->
                         if (username == null) {
@@ -45,23 +50,29 @@ class HomeFragment : Fragment() {
                     }
                 }
                 launch {
-                    loginViewModel.images.collect { apiState ->
-                        when (apiState) {
-                            is UiState.Loading -> {Log.i("Main", "Loading")}
-                            is UiState.Empty -> {Log.i("Main", "Empty")}
-                            is UiState.Error -> {Log.i("Main", "Error")}
+                    homeViewModel.posts.collect { uiState ->
+                        when (uiState) {
+                            is UiState.Loading -> {
+                                Log.i("Main", "Loading")
+                            }
+                            is UiState.Empty -> {
+                                Log.i("Main", "Empty")
+                            }
+                            is UiState.Error -> {
+                                Log.i("Main", "Error")
+                            }
                             is UiState.Success -> {
                                 recyclerView = binding.rv
                                 recyclerView.adapter = HomeAdapter(
-                                    apiState.data.photos.map { it.src.original }
+                                    uiState.data
                                 )
-                                recyclerView.layoutManager = StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+                                recyclerView.layoutManager = GridLayoutManager(context, 3)
                             }
                         }
                     }
                 }
             }
-
         }
     }
+
 }

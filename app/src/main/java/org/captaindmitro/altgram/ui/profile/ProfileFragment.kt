@@ -1,9 +1,11 @@
 package org.captaindmitro.altgram.ui.profile
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -14,18 +16,26 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.captaindmitro.altgram.R
+import org.captaindmitro.altgram.adapters.HomeAdapter
 import org.captaindmitro.altgram.databinding.FragmentProfileBinding
-import org.captaindmitro.altgram.ui.home.HomeAdapter
+import org.captaindmitro.altgram.adapters.PostsAdapter
+import org.captaindmitro.altgram.ui.viewmodels.DataViewModel
 import org.captaindmitro.altgram.ui.viewmodels.ProfileViewModel
-import org.captaindmitro.altgram.utils.NewUiState
 import org.captaindmitro.altgram.utils.UiState
+import org.captaindmitro.domain.models.Post
 
 class ProfileFragment : Fragment() {
     private lateinit var binding: FragmentProfileBinding
     private val args: ProfileFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val uploadAvatarAction = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        Log.i("Main", "Selected avatar: $uri")
+        uri?.let {
+            profileViewModel.updateAvatar(uri)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,7 +49,7 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val avatar = binding.userAvatar
-        val userName = binding.userName
+        val userName = binding.postUserName
         val userSubscriptions = binding.userSubscriptions
         val userFollows = binding.userFollows
         val userContent = binding.userContent
@@ -49,9 +59,13 @@ class ProfileFragment : Fragment() {
         accountEditButton.visibility = if (args.isSelf) View.VISIBLE else View.GONE
         followButton.visibility = if (args.isSelf) View.GONE else View.VISIBLE
 
-        avatar.load(R.drawable.ic_avatar_placeholder) {
-            transformations(CircleCropTransformation())
+        if (args.isSelf) {
+            avatar.setOnClickListener {
+                uploadAvatarAction.launch("image/*")
+            }
         }
+
+
 
         accountEditButton.setOnClickListener {
             val actions = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
@@ -60,6 +74,20 @@ class ProfileFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                Log.i("Main", "PARAMETERS ${args.isSelf}, ${args.userId}")
+                if (args.isSelf) {
+                    Log.i("Main", "Self Received userid ${args.userId}")
+                    profileViewModel.fetchProfile()
+                } else {
+                    Log.i("Main", "External Received userid ${args.userId}")
+                    profileViewModel.fetchProfile(args.userId!!)
+                }
+                launch { profileViewModel.avatar.collect {
+                    Log.i("main", "avatar $it")
+                    avatar.load(it.ifEmpty { R.drawable.ic_avatar_placeholder }) {
+                        transformations(CircleCropTransformation())
+                    }
+                } }
                 launch { profileViewModel.userName.collect { userName.text = it } }
                 launch { profileViewModel.subscriptions.collect { userSubscriptions.text = "$it\nfollowers" } }
                 launch { profileViewModel.followedOn.collect { userFollows.text =  "$it\nfollowing" } }
@@ -67,15 +95,17 @@ class ProfileFragment : Fragment() {
                 launch {
                     profileViewModel.posts.collect { profileState ->
                         when (profileState) {
-                            is NewUiState.Empty -> { binding.message.apply { visibility = View.VISIBLE; text = "No posts found" } }
-                            is NewUiState.Loading -> { binding.message.apply { visibility = View.VISIBLE; text = "Loading..." } }
-                            is NewUiState.Success -> {
+                            is UiState.Empty -> { binding.message.apply { visibility = View.VISIBLE; text = "No posts found" } }
+                            is UiState.Loading -> { binding.message.apply { visibility = View.VISIBLE; text = "Loading..." } }
+                            is UiState.Success -> {
                                 binding.message.visibility = View.GONE
                                 val recyclerView = binding.rv
                                 recyclerView.layoutManager = GridLayoutManager(context, 3)
+//                                recyclerView.adapter = PostsAdapter(profileState.data.reversed())
+                                //profileState.data.reversed()
                                 recyclerView.adapter = HomeAdapter(profileState.data)
                             }
-                            is NewUiState.Error -> { binding.message.apply { visibility = View.VISIBLE; text = "${profileState.error}" } }
+                            is UiState.Error -> { binding.message.apply { visibility = View.VISIBLE; text = "${profileState.error}" } }
                         }
                     }
                 }
