@@ -22,7 +22,7 @@ class ProfileRepositoryImpl @Inject constructor(
             Log.i("Main", "Received id: $uid")
             val task = ref.get()
             val result = task.await().child(it).getValue(org.captaindmitro.data.models.UserProfile::class.java)
-            Log.i("Main", "Received profile: ${result?.toDomain()}")
+            Log.i("Main", "Received profile: ${result!!.toDomain()}")
 
             return result?.toDomain() ?: throw Exception("Error in receiving user profile")
         }

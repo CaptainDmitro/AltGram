@@ -14,7 +14,12 @@ internal data class Post(
     val id: String = "",
     val url: String = "",
     val likes: Int = 0,
-    val comments: List<String> = emptyList()
+    val comments: Map<String, Comment> = emptyMap()
+)
+
+internal data class Comment(
+    val id: String = "",
+    val comment: String = ""
 )
 
 internal fun UserProfile.toDomain() = org.captaindmitro.domain.models.UserProfile(
@@ -31,5 +36,10 @@ internal fun Post.toDomain() = org.captaindmitro.domain.models.Post(
     this.id,
     this.url,
     this.likes,
-    this.comments
+    this.comments.mapValues { it.value.toDomain() }
+)
+
+internal fun Comment.toDomain() = org.captaindmitro.domain.models.Comment(
+    this.id,
+    this.comment
 )

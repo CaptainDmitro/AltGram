@@ -14,11 +14,10 @@ data class Post(
     val id: String,
     val url: String,
     val likes: Int,
-    val comments: List<String>
+    val comments: Map<String, Comment>
 )
 
 data class Comment(
     val id: String,
-    val username: String,
     val comment: String
 )

@@ -13,10 +13,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import coil.request.CachePolicy
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.launch
+import org.captaindmitro.altgram.R
+import org.captaindmitro.altgram.adapters.CommentsAdapter
 import org.captaindmitro.altgram.databinding.FragmentPostDetailsBinding
 import org.captaindmitro.altgram.ui.viewmodels.PostDetailsViewModel
 
@@ -42,9 +45,20 @@ class PostDetailsFragment : Fragment() {
         val descriptionTextView = binding.description
         val likeButton = binding.likeButton
         val shareButton = binding.shareButton
+        val commentEditView = binding.leaveComment
+        val commentAddButton = binding.commentsAddButton
+        val commentRv = binding.commentsRv
+
+        commentRv.layoutManager = LinearLayoutManager(context)
+        val rvAdapter = CommentsAdapter()
+        commentRv.adapter = rvAdapter
 
         likeButton.setOnClickListener {
 
+        }
+
+        commentAddButton.setOnClickListener {
+            postDetailsViewModel.sendComment(commentEditView.text.toString(), args.postId)
         }
 
         shareButton.setOnClickListener {
@@ -53,7 +67,6 @@ class PostDetailsFragment : Fragment() {
             val post = "kek"
             intent.putExtra("title", post)
             startActivity(Intent.createChooser(intent, "Share using!"))
-
         }
 
         avatarImageView.setOnClickListener {
@@ -64,14 +77,14 @@ class PostDetailsFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                launch { postDetailsViewModel.fetchUserProfile(args.postId.substringBefore('/')) }
+                launch { postDetailsViewModel.fetchUserProfile(args.postId.substringBefore('/'), args.postId) }
                 launch { postDetailsViewModel.fetchPostData(args.postId) }
 
                 launch { postDetailsViewModel.userName.collect { userNameTextView.text = it } }
 
                 launch { postDetailsViewModel.urlToAvatar.collect {
                     Log.i("Main", "Received avatar url $it")
-                    avatarImageView.load(it) {
+                    avatarImageView.load(it.ifEmpty { R.drawable.ic_avatar_placeholder }) {
                         transformations(CircleCropTransformation())
                         diskCacheKey(it)
                         diskCachePolicy(CachePolicy.ENABLED)
@@ -84,6 +97,10 @@ class PostDetailsFragment : Fragment() {
                         diskCachePolicy(CachePolicy.ENABLED)
                     }
 
+                } }
+                launch { postDetailsViewModel.comments.collect {
+                    Log.i("Main", "Comments: $it")
+                    rvAdapter.submitItems(it)
                 } }
             }
         }

@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
+import org.captaindmitro.data.models.Comment
 import org.captaindmitro.data.models.toDomain
 import org.captaindmitro.domain.models.Post
 import org.captaindmitro.domain.models.UserProfile
@@ -94,6 +95,39 @@ class DataRepositoryImpl @Inject constructor(
         }
 
         throw Exception("Cound not find a post")
+    }
+
+    override suspend fun sendComment(postId: String, comment: String) {
+        val (uId, pId) = postId.split('/')
+        //Log.i("Main", "DR sendComment $uId, $pId, $comment")
+        val dbRef = firebaseDatabase.getReference("Post").child(uId)
+        dbRef.get().await().children.forEach {
+            //Log.i("Main", "Childer ${it}")
+            if (it.child("id").value == pId) {
+                //Log.i("Main", "Found post")
+                val commentRef = it.ref
+                val newComment = Comment(firebaseAuth.currentUser!!.uid, comment)
+                commentRef.child("comments").push().setValue(newComment)
+                return
+            }
+        }
+    }
+
+    override suspend fun getComments(postId: String): List<org.captaindmitro.domain.models.Comment> {
+        val comments = mutableListOf<org.captaindmitro.domain.models.Comment>()
+        val (uId, pId) = postId.split('/')
+        val dbRef = firebaseDatabase.getReference("Post").child(uId)
+        dbRef.get().await().children.forEach {
+            if (it.child("id").value == pId) {
+                it.child("comments").children.forEach {
+                    Log.i("Main", "comment $it")
+                    comments += it.getValue(Comment::class.java)!!.toDomain()
+                }
+                return comments
+            }
+        }
+
+        return emptyList()
     }
 
 //    override suspend fun getAllPosts(): List<Post> {
