@@ -20,8 +20,8 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun getProfile(uid: String?): UserProfile {
         uid?.let {
             Log.i("Main", "Received id: $uid")
-            val task = ref.get()
-            val result = task.await().child(it).getValue(org.captaindmitro.data.models.UserProfile::class.java)
+            val task = ref.child(it)
+            val result = task.get().await().getValue(org.captaindmitro.data.models.UserProfile::class.java)
             Log.i("Main", "Received profile: ${result!!.toDomain()}")
 
             return result?.toDomain() ?: throw Exception("Error in receiving user profile")
@@ -35,10 +35,25 @@ class ProfileRepositoryImpl @Inject constructor(
         val userPosts = mutableListOf<Post>()
         currentUser?.let { user ->
             val postsRef = firebaseDatabase.getReference("Post")
-            val task = postsRef.get()
-            task.await().child(user.uid).children.forEach {
+            val task = postsRef.child(user.uid)
+            task.get().await().children.forEach {
                 val post = it.getValue(org.captaindmitro.data.models.Post::class.java)
                 val newId = user.uid + '/' + post!!.id
+                userPosts += post.toDomain().copy(id = newId)
+            }
+        }
+
+        return userPosts
+    }
+
+    override suspend fun getPosts(userId: String): List<Post> {
+        val userPosts = mutableListOf<Post>()
+        userId.let { user ->
+            val postsRef = firebaseDatabase.getReference("Post")
+            val task = postsRef.child(user)
+            task.get().await().children.forEach {
+                val post = it.getValue(org.captaindmitro.data.models.Post::class.java)
+                val newId = user + '/' + post!!.id
                 userPosts += post.toDomain().copy(id = newId)
             }
         }

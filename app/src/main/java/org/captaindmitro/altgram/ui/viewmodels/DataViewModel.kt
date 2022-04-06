@@ -25,7 +25,7 @@ class DataViewModel @Inject constructor(
             val userPosts = withContext(Dispatchers.IO) { profileRepository.getPosts() }
             Log.i("Main", "User posts: $userPosts")
             firebaseAuth.currentUser?.let {
-                val newPost = Post(uri.lastPathSegment.toString(), downloadUrl, 0, emptyMap())
+                val newPost = Post(uri.lastPathSegment.toString(), downloadUrl, 0, emptyList())
                 Log.i("Main", "New post: $newPost")
                 profileRepository.addNewPost(newPost)
             }

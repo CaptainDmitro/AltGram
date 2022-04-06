@@ -11,6 +11,8 @@ interface ProfileRepository {
 
     suspend fun getPosts(): List<Post>
 
+    suspend fun getPosts(userId: String): List<Post>
+
     suspend fun addNewPost(post: Post)
 
     suspend fun updateProfile(userProfile: UserProfile)

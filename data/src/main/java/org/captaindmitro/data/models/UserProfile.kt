@@ -36,7 +36,7 @@ internal fun Post.toDomain() = org.captaindmitro.domain.models.Post(
     this.id,
     this.url,
     this.likes,
-    this.comments.mapValues { it.value.toDomain() }
+    this.comments.values.map { it.toDomain() }
 )
 
 internal fun Comment.toDomain() = org.captaindmitro.domain.models.Comment(

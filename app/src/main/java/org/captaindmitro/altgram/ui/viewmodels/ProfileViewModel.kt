@@ -1,22 +1,18 @@
 package org.captaindmitro.altgram.ui.viewmodels
 
-import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.captaindmitro.altgram.utils.UiState
 import org.captaindmitro.domain.models.Post
 import org.captaindmitro.domain.repositories.DataRepository
 import org.captaindmitro.domain.repositories.ProfileRepository
-import java.security.PrivateKey
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -85,7 +81,7 @@ class ProfileViewModel @Inject constructor(
 
         _posts.value = UiState.Loading
         try {
-            val posts = profileRepository.getPosts().map { it.copy(id = userName.value) }
+            val posts = profileRepository.getPosts(userId).map { it.copy(id = userName.value) }
             _posts.value = if (posts.isEmpty()) UiState.Empty else UiState.Success(posts)
         } catch (e: Exception) {
             _posts.value = UiState.Error(e)

@@ -22,7 +22,7 @@ class PostDetailsViewModel @Inject constructor(
     private val dataRepository: DataRepository
 ) : ViewModel() {
 
-    private val _post: MutableStateFlow<Post> = MutableStateFlow(Post("", "", 0, emptyMap()))
+    private val _post: MutableStateFlow<Post> = MutableStateFlow(Post("", "", 0, emptyList()))
     val post = _post.asStateFlow()
 
     private val _userName: MutableStateFlow<String> = MutableStateFlow("")

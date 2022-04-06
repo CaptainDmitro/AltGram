@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable/ic_add_foreground.xml" value="0.296" />
         <entry key="app/src/main/res/drawable/ic_avatar_placeholder.xml" value="0.1" />
+        <entry key="app/src/main/res/drawable/ic_favorite.xml" value="0.296" />
         <entry key="app/src/main/res/drawable/ic_favorite_foreground.xml" value="0.296" />
         <entry key="app/src/main/res/drawable/ic_home_background.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_share_background.xml" value="0.201" />

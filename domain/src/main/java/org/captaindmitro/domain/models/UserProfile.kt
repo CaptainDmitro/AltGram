@@ -14,7 +14,7 @@ data class Post(
     val id: String,
     val url: String,
     val likes: Int,
-    val comments: Map<String, Comment>
+    val comments: List<Comment>
 )
 
 data class Comment(
