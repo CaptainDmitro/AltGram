@@ -16,20 +16,24 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.*
 import org.captaindmitro.altgram.R
 import org.captaindmitro.altgram.adapters.HomeAdapter
 import org.captaindmitro.altgram.databinding.FragmentProfileBinding
 import org.captaindmitro.altgram.adapters.PostsAdapter
 import org.captaindmitro.altgram.ui.viewmodels.DataViewModel
+import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
 import org.captaindmitro.altgram.ui.viewmodels.ProfileViewModel
 import org.captaindmitro.altgram.utils.UiState
 import org.captaindmitro.domain.models.Post
+import javax.inject.Inject
 
 class ProfileFragment : Fragment() {
     private lateinit var binding: FragmentProfileBinding
     private val args: ProfileFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val loginViewModel: LoginViewModel by activityViewModels()
     private val uploadAvatarAction = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         Log.i("Main", "Selected avatar: $uri")
         uri?.let {
@@ -65,8 +69,6 @@ class ProfileFragment : Fragment() {
             }
         }
 
-
-
         accountEditButton.setOnClickListener {
             val actions = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
             findNavController().navigate(actions)
@@ -74,11 +76,16 @@ class ProfileFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                if (args.isSelf) {
-                    profileViewModel.fetchProfile()
-                } else {
-                    profileViewModel.fetchProfile(args.userId!!)
+                launch {
+                    if (args.isSelf) {
+                        loginViewModel.currentUser.collect {
+                            profileViewModel.fetchProfile(it!!.uid)
+                        }
+                    } else {
+                        profileViewModel.fetchProfile(args.userId!!)
+                    }
                 }
+
                 launch { profileViewModel.avatar.collect {
                     avatar.load(it.ifEmpty { R.drawable.ic_avatar_placeholder }) {
                         transformations(CircleCropTransformation())

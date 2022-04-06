@@ -22,7 +22,7 @@ class DataViewModel @Inject constructor(
     fun uploadPost(uri: Uri) {
         viewModelScope.launch {
             val downloadUrl = withContext(Dispatchers.IO) { dataRepository.uploadImage(uri.toString()) }
-            val userPosts = withContext(Dispatchers.IO) { profileRepository.getPosts() }
+            val userPosts = withContext(Dispatchers.IO) { profileRepository.getPosts(firebaseAuth.currentUser!!.uid) }
             Log.i("Main", "User posts: $userPosts")
             firebaseAuth.currentUser?.let {
                 val newPost = Post(uri.lastPathSegment.toString(), downloadUrl, 0, emptyList())

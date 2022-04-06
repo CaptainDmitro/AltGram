@@ -7,10 +7,6 @@ interface ProfileRepository {
 
     suspend fun getProfile(uid: String?): UserProfile
 
-    suspend fun getProfile(): UserProfile
-
-    suspend fun getPosts(): List<Post>
-
     suspend fun getPosts(userId: String): List<Post>
 
     suspend fun addNewPost(post: Post)
@@ -19,6 +15,6 @@ interface ProfileRepository {
 
     suspend fun createNewProfile(userProfile: UserProfile)
 
-    suspend fun userPostsCount(): Int
+    suspend fun userPostsCount(userId: String): Int
 
 }

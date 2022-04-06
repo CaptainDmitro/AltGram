@@ -99,12 +99,9 @@ class DataRepositoryImpl @Inject constructor(
 
     override suspend fun sendComment(postId: String, comment: String) {
         val (uId, pId) = postId.split('/')
-        //Log.i("Main", "DR sendComment $uId, $pId, $comment")
         val dbRef = firebaseDatabase.getReference("Post").child(uId)
         dbRef.get().await().children.forEach {
-            //Log.i("Main", "Childer ${it}")
             if (it.child("id").value == pId) {
-                //Log.i("Main", "Found post")
                 val commentRef = it.ref
                 val newComment = Comment(firebaseAuth.currentUser!!.uid, comment)
                 commentRef.child("comments").push().setValue(newComment)
@@ -129,26 +126,5 @@ class DataRepositoryImpl @Inject constructor(
 
         return emptyList()
     }
-
-//    override suspend fun getAllPosts(): List<Post> {
-//        val allPosts = mutableListOf<Post>()
-//        val dbRef = firebaseDatabase.reference
-//        val profilesRef = dbRef.child("UserProfile")
-//        profilesRef.get().await().children.forEach { userPosts ->
-//            if (userPosts.key == firebaseAuth.currentUser?.uid) {
-//
-//            }
-//            Log.i("Main", "userPosts: $userPosts")
-//            val userProfile = userPosts.getValue(UserProfile::class.java)
-//            if (userProfile?.userName == currentUser) {
-//                return@forEach
-//            }
-//            userProfile?.posts?.map {
-//                allPosts += it.toDomain()
-//            }
-//        }
-//        Log.i("Main", "All posts: $allPosts")
-//        return allPosts
-//    }
 
 }

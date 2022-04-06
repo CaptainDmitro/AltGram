@@ -29,23 +29,6 @@ class ProfileRepositoryImpl @Inject constructor(
         throw Exception("Error")
     }
 
-    override suspend fun getProfile(): UserProfile = getProfile(currentUser?.uid)
-
-    override suspend fun getPosts(): List<Post> {
-        val userPosts = mutableListOf<Post>()
-        currentUser?.let { user ->
-            val postsRef = firebaseDatabase.getReference("Post")
-            val task = postsRef.child(user.uid)
-            task.get().await().children.forEach {
-                val post = it.getValue(org.captaindmitro.data.models.Post::class.java)
-                val newId = user.uid + '/' + post!!.id
-                userPosts += post.toDomain().copy(id = newId)
-            }
-        }
-
-        return userPosts
-    }
-
     override suspend fun getPosts(userId: String): List<Post> {
         val userPosts = mutableListOf<Post>()
         userId.let { user ->
@@ -81,16 +64,10 @@ class ProfileRepositoryImpl @Inject constructor(
         if (result == null) {
             ref.updateChildren(mapOf(userProfile.id to userProfile)).await()
         }
-//        val result = task.await().child(currentUser?.uid).value
-//        Log.i("Main", "user uid: ${currentUser.uid}")
-//        when (result) {
-//            null -> { updateProfile(userProfile) }
-//            else -> { throw Exception("Cannot create profile") }
-//        }
     }
 
-    override suspend fun userPostsCount(): Int {
-        val postsCount =  firebaseDatabase.getReference("Post").child(currentUser?.uid!!).get().await().childrenCount
+    override suspend fun userPostsCount(userId: String): Int {
+        val postsCount =  firebaseDatabase.getReference("Post").child(userId).get().await().childrenCount
         return postsCount.toInt()
     }
 }

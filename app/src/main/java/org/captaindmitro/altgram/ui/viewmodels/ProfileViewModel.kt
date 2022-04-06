@@ -1,13 +1,16 @@
 package org.captaindmitro.altgram.ui.viewmodels
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.captaindmitro.altgram.utils.UiState
 import org.captaindmitro.domain.models.Post
 import org.captaindmitro.domain.repositories.DataRepository
@@ -41,32 +44,12 @@ class ProfileViewModel @Inject constructor(
     private var _contentCount: MutableStateFlow<Int> = MutableStateFlow(0)
     val contentCount: StateFlow<Int> = _contentCount.asStateFlow()
 
-
     fun updateAvatar(uri: Uri) {
         viewModelScope.launch {
-            val avatarLink = dataRepository.uploadAvatar(uri.toString())
-            val currentProfile = profileRepository.getProfile().copy(avatar = avatarLink)
+            val avatarLink = withContext(Dispatchers.IO) { dataRepository.uploadAvatar(uri.toString()) }
+            val currentProfile = profileRepository.getProfile(id.value).copy(avatar = avatarLink)
             profileRepository.updateProfile(currentProfile)
             _avatar.value = avatarLink
-        }
-    }
-
-    suspend fun fetchProfile() {
-        val userProfile = profileRepository.getProfile()
-
-        _id.value = userProfile.id
-        _avatar.value = userProfile.avatar
-        _userName.value = userProfile.userName
-        _subscriptions.value = userProfile.followers
-        _followedOn.value = userProfile.follows
-        _contentCount.value = profileRepository.userPostsCount()
-
-        _posts.value = UiState.Loading
-        try {
-            val posts = profileRepository.getPosts()
-            _posts.value = if (posts.isEmpty()) UiState.Empty else UiState.Success(posts)
-        } catch (e: Exception) {
-            _posts.value = UiState.Error(e)
         }
     }
 
@@ -78,6 +61,9 @@ class ProfileViewModel @Inject constructor(
         _userName.value = userProfile.userName
         _subscriptions.value = userProfile.followers
         _followedOn.value = userProfile.follows
+        _contentCount.value = profileRepository.userPostsCount(id.value)
+
+        Log.i("Main", "User id: ${id.value}")
 
         _posts.value = UiState.Loading
         try {
