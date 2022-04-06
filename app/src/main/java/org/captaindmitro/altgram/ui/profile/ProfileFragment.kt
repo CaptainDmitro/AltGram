@@ -74,16 +74,12 @@ class ProfileFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                Log.i("Main", "PARAMETERS ${args.isSelf}, ${args.userId}")
                 if (args.isSelf) {
-                    Log.i("Main", "Self Received userid ${args.userId}")
                     profileViewModel.fetchProfile()
                 } else {
-                    Log.i("Main", "External Received userid ${args.userId}")
                     profileViewModel.fetchProfile(args.userId!!)
                 }
                 launch { profileViewModel.avatar.collect {
-                    Log.i("main", "avatar $it")
                     avatar.load(it.ifEmpty { R.drawable.ic_avatar_placeholder }) {
                         transformations(CircleCropTransformation())
                     }
@@ -101,8 +97,6 @@ class ProfileFragment : Fragment() {
                                 binding.message.visibility = View.GONE
                                 val recyclerView = binding.rv
                                 recyclerView.layoutManager = GridLayoutManager(context, 3)
-//                                recyclerView.adapter = PostsAdapter(profileState.data.reversed())
-                                //profileState.data.reversed()
                                 recyclerView.adapter = HomeAdapter(profileState.data)
                             }
                             is UiState.Error -> { binding.message.apply { visibility = View.VISIBLE; text = "${profileState.error}" } }

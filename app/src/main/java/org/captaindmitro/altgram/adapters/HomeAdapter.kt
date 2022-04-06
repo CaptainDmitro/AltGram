@@ -1,5 +1,6 @@
 package org.captaindmitro.altgram.adapters
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.findNavController
@@ -30,6 +31,7 @@ class HomeAdapter(private val posts: List<Post>) : RecyclerView.Adapter<HomeAdap
                 placeholder(R.drawable.ic_launcher_background)
             }
             binding.imageView.setOnClickListener {
+                Log.i("Main", "Post ID = ${post}")
                 val action = PostDetailsFragmentDirections.actionGlobalPostDetailsFragment(post.id)
                 it.findNavController().navigate(action)
             }

@@ -62,10 +62,11 @@ class ProfileViewModel @Inject constructor(
         _userName.value = userProfile.userName
         _subscriptions.value = userProfile.followers
         _followedOn.value = userProfile.follows
+        _contentCount.value = profileRepository.userPostsCount()
 
         _posts.value = UiState.Loading
         try {
-            val posts = profileRepository.getPosts().map { it.copy(id = userName.value) }
+            val posts = profileRepository.getPosts()
             _posts.value = if (posts.isEmpty()) UiState.Empty else UiState.Success(posts)
         } catch (e: Exception) {
             _posts.value = UiState.Error(e)

@@ -17,4 +17,6 @@ interface ProfileRepository {
 
     suspend fun createNewProfile(userProfile: UserProfile)
 
+    suspend fun userPostsCount(): Int
+
 }

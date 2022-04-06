@@ -38,7 +38,8 @@ class ProfileRepositoryImpl @Inject constructor(
             val task = postsRef.get()
             task.await().child(user.uid).children.forEach {
                 val post = it.getValue(org.captaindmitro.data.models.Post::class.java)
-                userPosts += post!!.toDomain()
+                val newId = user.uid + '/' + post!!.id
+                userPosts += post.toDomain().copy(id = newId)
             }
         }
 
@@ -71,5 +72,10 @@ class ProfileRepositoryImpl @Inject constructor(
 //            null -> { updateProfile(userProfile) }
 //            else -> { throw Exception("Cannot create profile") }
 //        }
+    }
+
+    override suspend fun userPostsCount(): Int {
+        val postsCount =  firebaseDatabase.getReference("Post").child(currentUser?.uid!!).get().await().childrenCount
+        return postsCount.toInt()
     }
 }
