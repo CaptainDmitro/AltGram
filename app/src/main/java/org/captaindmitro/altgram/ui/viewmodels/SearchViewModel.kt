@@ -1,5 +1,6 @@
 package org.captaindmitro.altgram.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,9 +26,24 @@ class SearchViewModel @Inject constructor(
     private val _feed: MutableStateFlow<UiState<List<Pair<UserProfile, Post>>>> = MutableStateFlow(UiState.Empty)
     val feed: StateFlow<UiState<List<Pair<UserProfile, Post>>>> = _feed.asStateFlow()
 
-    init {
+    private val subscriptions: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+
+    fun syncFavorites() {
         viewModelScope.launch {
             fetchPosts()
+            subscriptions.value = profileRepository.getSubscriptions()
+            Log.i("Main", "Subs given: ${subscriptions.value}")
+            with (_feed.value as UiState.Success) {
+                val newData = data.filter { (profile, _) -> !subscriptions.value.contains(profile.id) }
+                _feed.value = UiState.Success(newData)
+            }
+            Log.i("Main", "New feed: ${feed.value}")
+        }
+    }
+
+    fun subscribeOn(userId: String) {
+        viewModelScope.launch {
+            profileRepository.subscribeOn(userId)
         }
     }
 
@@ -38,7 +54,7 @@ class SearchViewModel @Inject constructor(
                 val fetchedPosts = dataRepository.getFeed()
                 val userNames = userProfiles(fetchedPosts)
 
-                _feed.value = UiState.Success(userNames.zip(fetchedPosts) { a, b -> a to b })
+                _feed.value = if (fetchedPosts.isEmpty() or userNames.isEmpty()) UiState.Empty else UiState.Success(userNames.zip(fetchedPosts) { a, b -> a to b })
             } catch (e: Exception) {
                 _feed.value = UiState.Error(e)
             }

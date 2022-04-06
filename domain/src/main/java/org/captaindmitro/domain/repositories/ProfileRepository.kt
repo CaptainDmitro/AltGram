@@ -7,18 +7,26 @@ interface ProfileRepository {
 
     suspend fun getProfile(uid: String?): UserProfile
 
-    suspend fun getProfile(): UserProfile
-
-    suspend fun getPosts(): List<Post>
-
     suspend fun getPosts(userId: String): List<Post>
 
-    suspend fun addNewPost(post: Post)
+    suspend fun getSubscriptions(userId: String): List<String>
+
+    suspend fun getSubscriptions(): List<String>
+
+    suspend fun getUserAvatar(userId: String): String
+
+    suspend fun getContentCounter(userId: String): Int
+
+    suspend fun subscribeOn(userId: String)
+
+    suspend fun unsubscribeFrom(userId: String)
+
+    suspend fun publishPost(post: Post)
 
     suspend fun updateProfile(userProfile: UserProfile)
 
     suspend fun createNewProfile(userProfile: UserProfile)
 
-    suspend fun userPostsCount(): Int
+    suspend fun changeUserName(userName: String)
 
 }

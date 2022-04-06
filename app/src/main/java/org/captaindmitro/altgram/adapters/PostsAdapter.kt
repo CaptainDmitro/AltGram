@@ -27,7 +27,6 @@ class PostsAdapter(private val items: List<Post>) : RecyclerView.Adapter<PostsAd
             binding.postImage.load(post.url) {
                 diskCacheKey(post.url)
                 diskCachePolicy(CachePolicy.ENABLED)
-                placeholder(R.drawable.ic_launcher_background)
             }
             binding.postImage.setOnClickListener {
                 val action = PostDetailsFragmentDirections.actionGlobalPostDetailsFragment(post.id)

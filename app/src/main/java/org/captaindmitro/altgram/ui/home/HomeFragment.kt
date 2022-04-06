@@ -22,11 +22,10 @@ import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
 import org.captaindmitro.altgram.utils.UiState
 
 class HomeFragment : Fragment() {
+    private lateinit var binding: FragmentHomeBinding
+
     private val loginViewModel: LoginViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
-
-    private lateinit var binding: FragmentHomeBinding
-    private lateinit var recyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,8 +38,15 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val recyclerView = binding.rv
+        val message = binding.homeMessage
+        val adapter = HomeAdapter()
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = GridLayoutManager(context, 3)
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                homeViewModel.getAllPosts()
                 launch {
                     loginViewModel.currentUser.collect { username ->
                         if (username == null) {
@@ -53,20 +59,17 @@ class HomeFragment : Fragment() {
                     homeViewModel.posts.collect { uiState ->
                         when (uiState) {
                             is UiState.Loading -> {
-                                Log.i("Main", "Loading")
+                                message.text = "Loading..."
                             }
                             is UiState.Empty -> {
-                                Log.i("Main", "Empty")
+                                message.text = "No posts"
                             }
                             is UiState.Error -> {
-                                Log.i("Main", "Error")
+                                message.text = "Error: ${uiState.error}"
                             }
                             is UiState.Success -> {
-                                recyclerView = binding.rv
-                                recyclerView.adapter = HomeAdapter(
-                                    uiState.data
-                                )
-                                recyclerView.layoutManager = GridLayoutManager(context, 3)
+                                message.visibility = View.GONE
+                                adapter.submitDataSet(uiState.data)
                             }
                         }
                     }

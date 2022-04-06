@@ -5,8 +5,8 @@ data class UserProfile(
     val avatar: String,
     val userName: String,
     val email: String,
-    val followers: Int,
-    val follows: Int,
+    val followers: List<String>,
+    val follows: List<String>,
     val posts: List<Post>
 )
 

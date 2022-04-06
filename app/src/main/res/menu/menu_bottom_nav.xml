@@ -9,9 +9,9 @@
     <item android:id="@+id/newPostFragment"
         android:title="Add"
         android:icon="@drawable/ic_add_foreground" />
-    <item android:id="@+id/favoriteFragment"
+    <item android:id="@+id/favoritesFragment"
         android:title="Favorite"
-        android:icon="@drawable/ic_favorite_foreground" />
+        android:icon="@drawable/favorites_icon_selector" />
     <item android:id="@+id/profileFragment"
         android:title="Profile"
         android:icon="@drawable/ic_profile_foreground" />

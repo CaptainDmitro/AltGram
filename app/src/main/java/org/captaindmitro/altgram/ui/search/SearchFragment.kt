@@ -35,26 +35,22 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val rv = binding.searchRv
+        val message = binding.searchMessage
+        val adapter = SearchAdapter(onSubscribe = { userId -> searchViewModel.subscribeOn(userId) })
+        rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        rv.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-
+                searchViewModel.syncFavorites()
                 searchViewModel.feed.collect { uiState ->
                     when (uiState) {
-                        is UiState.Loading -> {
-                            Log.i("Main", "Loading")
-                        }
-                        is UiState.Empty -> {
-                            Log.i("Main", "Empty")
-                        }
-                        is UiState.Error -> {
-                            Log.i("Main", "Error")
-                        }
+                        is UiState.Loading -> { message.visibility = View.VISIBLE; message.text = "Loading..." }
+                        is UiState.Empty -> { message.visibility = View.VISIBLE; message.text = "No posts" }
+                        is UiState.Error -> { message.visibility = View.VISIBLE; message.text = "Error: ${uiState.error}" }
                         is UiState.Success -> {
-                            rv.adapter = SearchAdapter(
-                                uiState.data
-                            )
-                            rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+                            message.visibility = View.GONE
+                            adapter.submitDataSet(uiState.data)
                         }
                     }
                 }

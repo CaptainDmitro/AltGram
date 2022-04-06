@@ -22,15 +22,12 @@ class HomeViewModel @Inject constructor(
     private val _posts: MutableStateFlow<UiState<List<Post>>> = MutableStateFlow(UiState.Empty)
     val posts: StateFlow<UiState<List<Post>>> = _posts.asStateFlow()
 
-    init {
-        getAllPosts()
-    }
-
-    private fun getAllPosts() {
+    fun getAllPosts() {
         viewModelScope.launch {
             _posts.value = try {
                 UiState.Loading
-                UiState.Success(dataRepository.getAllPosts())
+                val res = dataRepository.getAllPosts()
+                if (res.isEmpty()) UiState.Empty else UiState.Success(res)
             } catch (e: Exception) {
                 Log.i("Main", "error loading $e")
                 UiState.Error(e)

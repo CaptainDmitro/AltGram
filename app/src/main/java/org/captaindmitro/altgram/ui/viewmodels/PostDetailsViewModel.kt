@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -42,6 +43,9 @@ class PostDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             Log.i("Main", "vm sendCOmment $comment, $postId")
             dataRepository.sendComment(postId, comment)
+            _comments.value = withContext(Dispatchers.IO) { dataRepository.getComments(postId).map { comment ->
+                comment.copy(id = profileRepository.getUserAvatar(comment.id))
+            } }
         }
     }
 
@@ -50,7 +54,9 @@ class PostDetailsViewModel @Inject constructor(
 
         _userName.value = userProfile.userName
         _urlToAvatar.value = userProfile.avatar
-        _comments.value = withContext(Dispatchers.IO) { dataRepository.getComments(postId) }
+        _comments.value = withContext(Dispatchers.IO) { dataRepository.getComments(postId).map { comment ->
+            comment.copy(id = profileRepository.getUserAvatar(comment.id))
+        } }
     }
 
     suspend fun fetchPostData(id: String) {

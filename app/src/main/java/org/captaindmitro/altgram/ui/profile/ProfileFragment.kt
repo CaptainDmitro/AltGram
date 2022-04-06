@@ -20,16 +20,15 @@ import kotlinx.coroutines.*
 import org.captaindmitro.altgram.R
 import org.captaindmitro.altgram.adapters.HomeAdapter
 import org.captaindmitro.altgram.databinding.FragmentProfileBinding
-import org.captaindmitro.altgram.adapters.PostsAdapter
-import org.captaindmitro.altgram.ui.viewmodels.DataViewModel
+import org.captaindmitro.altgram.ui.viewmodels.LoginViewModel
 import org.captaindmitro.altgram.ui.viewmodels.ProfileViewModel
 import org.captaindmitro.altgram.utils.UiState
-import org.captaindmitro.domain.models.Post
 
 class ProfileFragment : Fragment() {
     private lateinit var binding: FragmentProfileBinding
     private val args: ProfileFragmentArgs by navArgs()
     private val profileViewModel: ProfileViewModel by activityViewModels()
+    private val loginViewModel: LoginViewModel by activityViewModels()
     private val uploadAvatarAction = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         Log.i("Main", "Selected avatar: $uri")
         uri?.let {
@@ -56,6 +55,7 @@ class ProfileFragment : Fragment() {
         val accountEditButton = binding.userSettings
         val followButton = binding.userFollowButton
 
+
         accountEditButton.visibility = if (args.isSelf) View.VISIBLE else View.GONE
         followButton.visibility = if (args.isSelf) View.GONE else View.VISIBLE
 
@@ -65,41 +65,54 @@ class ProfileFragment : Fragment() {
             }
         }
 
-
+        followButton.setOnClickListener {
+            profileViewModel.subscribeOn(args.userId!!)
+            profileViewModel.updateFollowers()
+            it.visibility = View.GONE
+        }
 
         accountEditButton.setOnClickListener {
             val actions = ProfileFragmentDirections.actionProfileFragmentToEditProfileFragment()
             findNavController().navigate(actions)
         }
 
+        val recyclerView = binding.rv
+        val message = binding.message
+        recyclerView.layoutManager = GridLayoutManager(context, 3)
+        val adapter = HomeAdapter()
+        recyclerView.adapter = adapter
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                if (args.isSelf) {
-                    profileViewModel.fetchProfile()
-                } else {
-                    profileViewModel.fetchProfile(args.userId!!)
+                launch {
+                    if (args.isSelf) {
+                        loginViewModel.currentUser.collect {
+                            profileViewModel.fetchProfile(it!!.uid)
+                        }
+                    } else {
+                        profileViewModel.fetchProfile(args.userId!!)
+                    }
                 }
+
                 launch { profileViewModel.avatar.collect {
                     avatar.load(it.ifEmpty { R.drawable.ic_avatar_placeholder }) {
                         transformations(CircleCropTransformation())
                     }
                 } }
                 launch { profileViewModel.userName.collect { userName.text = it } }
-                launch { profileViewModel.subscriptions.collect { userSubscriptions.text = "$it\nfollowers" } }
-                launch { profileViewModel.followedOn.collect { userFollows.text =  "$it\nfollowing" } }
+                launch { profileViewModel.subscriptions.collect { userSubscriptions.text = "${it.size}\nfollowing" } }
+                launch { profileViewModel.followedOn.collect { userFollows.text =  "$it\nfollowers" } }
                 launch { profileViewModel.contentCount.collect { userContent.text =  "$it\nposts" } }
                 launch {
-                    profileViewModel.posts.collect { profileState ->
-                        when (profileState) {
-                            is UiState.Empty -> { binding.message.apply { visibility = View.VISIBLE; text = "No posts found" } }
-                            is UiState.Loading -> { binding.message.apply { visibility = View.VISIBLE; text = "Loading..." } }
+                    profileViewModel.posts.collect { uiState ->
+                        when (uiState) {
+                            is UiState.Empty -> { message.apply { visibility = View.VISIBLE; text = "No posts found" } }
+                            is UiState.Loading -> { message.apply { visibility = View.VISIBLE; text = "Loading..." } }
                             is UiState.Success -> {
-                                binding.message.visibility = View.GONE
-                                val recyclerView = binding.rv
-                                recyclerView.layoutManager = GridLayoutManager(context, 3)
-                                recyclerView.adapter = HomeAdapter(profileState.data)
+                                message.visibility = View.GONE
+                                adapter.submitDataSet(uiState.data)
                             }
-                            is UiState.Error -> { binding.message.apply { visibility = View.VISIBLE; text = "${profileState.error}" } }
+                            is UiState.Error -> { message.apply { visibility = View.VISIBLE; text = "${uiState.error}" } }
                         }
                     }
                 }

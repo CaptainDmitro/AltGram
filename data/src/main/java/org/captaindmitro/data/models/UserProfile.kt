@@ -5,8 +5,8 @@ internal data class UserProfile(
     val avatar: String = "",
     val userName: String = "",
     val email: String = "",
-    val followers: Int = 0,
-    val follows: Int = 0,
+    val followers: Map<String, String> = emptyMap(),
+    val follows: Map<String, String> = emptyMap(),
     val posts: List<Post> = emptyList(),
 )
 
@@ -27,9 +27,16 @@ internal fun UserProfile.toDomain() = org.captaindmitro.domain.models.UserProfil
     this.avatar,
     this.userName,
     this.email,
-    this.followers,
-    this.follows,
+    this.followers.values.toList(),
+    this.follows.values.toList(),
     this.posts.map { it.toDomain() }
+)
+
+internal fun org.captaindmitro.domain.models.UserProfile.toData() = UserProfile(
+    this.id,
+    this.avatar,
+    this.userName,
+    this.email
 )
 
 internal fun Post.toDomain() = org.captaindmitro.domain.models.Post(

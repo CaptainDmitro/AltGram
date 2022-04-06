@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
+import org.captaindmitro.data.models.toData
 import org.captaindmitro.data.models.toDomain
 import org.captaindmitro.domain.models.Post
 import org.captaindmitro.domain.models.UserProfile
@@ -29,23 +30,6 @@ class ProfileRepositoryImpl @Inject constructor(
         throw Exception("Error")
     }
 
-    override suspend fun getProfile(): UserProfile = getProfile(currentUser?.uid)
-
-    override suspend fun getPosts(): List<Post> {
-        val userPosts = mutableListOf<Post>()
-        currentUser?.let { user ->
-            val postsRef = firebaseDatabase.getReference("Post")
-            val task = postsRef.child(user.uid)
-            task.get().await().children.forEach {
-                val post = it.getValue(org.captaindmitro.data.models.Post::class.java)
-                val newId = user.uid + '/' + post!!.id
-                userPosts += post.toDomain().copy(id = newId)
-            }
-        }
-
-        return userPosts
-    }
-
     override suspend fun getPosts(userId: String): List<Post> {
         val userPosts = mutableListOf<Post>()
         userId.let { user ->
@@ -61,16 +45,27 @@ class ProfileRepositoryImpl @Inject constructor(
         return userPosts
     }
 
-    override suspend fun addNewPost(post: Post) {
+    override suspend fun publishPost(post: Post) {
+        Log.i("Main", "Post to publish: $post")
         currentUser?.let {
             val postRef = firebaseDatabase.getReference("Post")
-            postRef.child(it.uid).push().setValue(post).await()
+            postRef.child(it.uid).push().setValue(post)
         }
     }
 
+    override suspend fun getUserAvatar(userId: String): String {
+        val dbRef = ref.child(userId).child("avatar")
+        val task = dbRef.get().await().getValue(String::class.java)
+        Log.i("Main", "QWERQEWR $task")
+        return task!!
+    }
+
     override suspend fun updateProfile(userProfile: UserProfile) {
+        Log.i("Main", "local profile: $userProfile")
         currentUser?.let {
-            ref.updateChildren(mapOf(it.uid to userProfile)).await()
+            val profile = ref.child(it.uid).get().await().getValue(org.captaindmitro.data.models.UserProfile::class.java)
+            Log.i("Main", "local profile: $profile")
+            ref.updateChildren(mapOf(it.uid to userProfile.toData()))
         }
     }
 
@@ -81,16 +76,46 @@ class ProfileRepositoryImpl @Inject constructor(
         if (result == null) {
             ref.updateChildren(mapOf(userProfile.id to userProfile)).await()
         }
-//        val result = task.await().child(currentUser?.uid).value
-//        Log.i("Main", "user uid: ${currentUser.uid}")
-//        when (result) {
-//            null -> { updateProfile(userProfile) }
-//            else -> { throw Exception("Cannot create profile") }
-//        }
     }
 
-    override suspend fun userPostsCount(): Int {
-        val postsCount =  firebaseDatabase.getReference("Post").child(currentUser?.uid!!).get().await().childrenCount
+    override suspend fun getContentCounter(userId: String): Int {
+        val postsCount =  firebaseDatabase.getReference("Post").child(userId).get().await().childrenCount
         return postsCount.toInt()
+    }
+
+    override suspend fun getSubscriptions(userId: String): List<String> {
+        val res = mutableListOf<String>()
+        val dbRef = ref.child(userId).child("follows")
+        dbRef.get().await().children.forEach {
+            it.getValue(String::class.java)?.let { res += it }
+        }
+
+        return res
+    }
+
+    override suspend fun getSubscriptions(): List<String> {
+        return getSubscriptions(currentUser!!.uid)
+    }
+
+    override suspend fun subscribeOn(userId: String) {
+        val dbRef = ref.child(currentUser!!.uid).child("follows")
+        dbRef.push().setValue(userId).await()
+        val db = ref.child(userId).child("followers")
+        db.push().setValue(currentUser!!.uid)
+    }
+
+    override suspend fun unsubscribeFrom(userId: String) {
+        val dbRef = ref.child(currentUser!!.uid).child("follows")
+        dbRef.get().await().children.forEach {
+            if (it.getValue(String::class.java) == userId) {
+                it.ref.removeValue().await()
+                return
+            }
+        }
+    }
+
+    override suspend fun changeUserName(userName: String) {
+        val dbRef = ref.child(currentUser!!.uid).child("userName")
+        dbRef.setValue(userName).await()
     }
 }

@@ -13,7 +13,8 @@ import org.captaindmitro.altgram.ui.details.PostDetailsFragmentDirections
 import org.captaindmitro.domain.models.Post
 import org.captaindmitro.domain.models.UserProfile
 
-class HomeAdapter(private val posts: List<Post>) : RecyclerView.Adapter<HomeAdapter.PostViewHolder>() {
+class HomeAdapter : RecyclerView.Adapter<HomeAdapter.PostViewHolder>() {
+    private val posts = mutableListOf<Post>()
 
     inner class PostViewHolder(val binding: FragmentHomeItemBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -28,7 +29,6 @@ class HomeAdapter(private val posts: List<Post>) : RecyclerView.Adapter<HomeAdap
             binding.imageView.load(post.url) {
                 diskCacheKey(post.url)
                 diskCachePolicy(CachePolicy.ENABLED)
-                placeholder(R.drawable.ic_launcher_background)
             }
             binding.imageView.setOnClickListener {
                 Log.i("Main", "Post ID = ${post}")
@@ -40,6 +40,12 @@ class HomeAdapter(private val posts: List<Post>) : RecyclerView.Adapter<HomeAdap
 
     override fun getItemCount(): Int {
         return posts.size
+    }
+
+    fun submitDataSet(newItems: List<Post>) {
+        posts.clear()
+        posts.addAll(newItems)
+        notifyDataSetChanged()
     }
 
 }

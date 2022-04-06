@@ -50,8 +50,8 @@ class PostDetailsFragment : Fragment() {
         val commentRv = binding.commentsRv
 
         commentRv.layoutManager = LinearLayoutManager(context)
-        val rvAdapter = CommentsAdapter()
-        commentRv.adapter = rvAdapter
+        val adapter = CommentsAdapter()
+        commentRv.adapter = adapter
 
         likeButton.setOnClickListener {
 
@@ -63,14 +63,13 @@ class PostDetailsFragment : Fragment() {
 
         shareButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
-            intent.setType("text/plain")
+            intent.type = "text/plain"
             val post = "kek"
             intent.putExtra("title", post)
             startActivity(Intent.createChooser(intent, "Share using!"))
         }
 
         avatarImageView.setOnClickListener {
-            Log.i("Main", "QWER ${args.postId.substringBefore('/')}")
             val action = PostDetailsFragmentDirections.actionPostDetailsFragmentToProfileFragment2(isSelf = false, userId = args.postId.substringBefore('/'))
             findNavController().navigate(action)
         }
@@ -99,8 +98,8 @@ class PostDetailsFragment : Fragment() {
 
                 } }
                 launch { postDetailsViewModel.comments.collect {
-                    Log.i("Main", "Comments: $it")
-                    rvAdapter.submitItems(it)
+                    adapter.submitDataSet(it)
+                    (commentRv.layoutManager as LinearLayoutManager).scrollToPosition(0)
                 } }
             }
         }
