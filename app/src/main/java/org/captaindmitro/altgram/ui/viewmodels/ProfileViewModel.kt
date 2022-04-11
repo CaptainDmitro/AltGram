@@ -86,4 +86,10 @@ class ProfileViewModel @Inject constructor(
             profileRepository.subscribeOn(userId)
         }
     }
+
+    fun unsubscribe(userId: String) {
+        viewModelScope.launch {
+            profileRepository.unsubscribeFrom(userId)
+        }
+    }
 }

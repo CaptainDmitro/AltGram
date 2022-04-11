@@ -71,11 +71,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     override suspend fun createNewProfile(userProfile: UserProfile) {
         Log.i("Main", "init user uid: ${userProfile.id}")
-        val task = ref.get()
-        val result = task.await().child(userProfile.id).value
-        if (result == null) {
-            ref.updateChildren(mapOf(userProfile.id to userProfile)).await()
-        }
+        ref.updateChildren(mapOf(userProfile.id to userProfile)).await()
     }
 
     override suspend fun getContentCounter(userId: String): Int {

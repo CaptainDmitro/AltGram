@@ -72,6 +72,7 @@ class LoginViewModel @Inject constructor(
             try {
                 currentUser.value?.updateProfile(userProfileChangeRequest {
                     displayName = newName
+                    build()
                 })?.await()
                 profileRepository.changeUserName(newName)
                 onSuccess()

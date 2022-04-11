@@ -66,9 +66,15 @@ class ProfileFragment : Fragment() {
         }
 
         followButton.setOnClickListener {
-            profileViewModel.subscribeOn(args.userId!!)
-            profileViewModel.updateFollowers()
-            it.visibility = View.GONE
+            if (args.isSubscribed) {
+                followButton.text = "Unsubscribe"
+                profileViewModel.unsubscribe(args.userId!!)
+                profileViewModel.updateFollowers()
+            } else {
+                followButton.text = "Subscribe"
+                profileViewModel.subscribeOn(args.userId!!)
+                profileViewModel.updateFollowers()
+            }
         }
 
         accountEditButton.setOnClickListener {

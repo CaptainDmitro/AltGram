@@ -21,12 +21,14 @@ import kotlinx.coroutines.launch
 import org.captaindmitro.altgram.R
 import org.captaindmitro.altgram.adapters.CommentsAdapter
 import org.captaindmitro.altgram.databinding.FragmentPostDetailsBinding
+import org.captaindmitro.altgram.ui.viewmodels.FavoritesViewModel
 import org.captaindmitro.altgram.ui.viewmodels.PostDetailsViewModel
 
 class PostDetailsFragment : Fragment() {
     private lateinit var binding: FragmentPostDetailsBinding
     private val args: PostDetailsFragmentArgs by navArgs()
     private val postDetailsViewModel: PostDetailsViewModel by activityViewModels()
+    private val favoritesViewModel: FavoritesViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
